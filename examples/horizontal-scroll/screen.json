@@ -1,0 +1,186 @@
+{
+  "type": "vstack",
+  "properties": {
+    "spacing": 20,
+    "alignment": "leading",
+    "padding": 16
+  },
+  "children": [
+    {
+      "type": "text",
+      "properties": {
+        "content": "Photo Gallery",
+        "fontSize": 28,
+        "fontWeight": "bold"
+      }
+    },
+    {
+      "type": "text",
+      "properties": {
+        "content": "Swipe to explore",
+        "fontSize": 14,
+        "foregroundColor": "gray"
+      }
+    },
+    {
+      "type": "scrollView",
+      "properties": {
+        "axis": "horizontal",
+        "showsIndicators": false,
+        "clipped": false
+      },
+      "children": [
+        {
+          "type": "hstack",
+          "properties": {
+            "spacing": 12
+          },
+          "children": [
+            {
+              "type": "vstack",
+              "properties": {
+                "spacing": 8
+              },
+              "children": [
+                {
+                  "type": "image",
+                  "properties": {
+                    "imageURL": "https://picsum.photos/seed/sunset/200/150",
+                    "resizable": true,
+                    "contentMode": "fill",
+                    "width": 200,
+                    "height": 150,
+                    "cornerRadius": 12,
+                    "clipped": true
+                  }
+                },
+                {
+                  "type": "text",
+                  "properties": {
+                    "content": "Sunset",
+                    "fontSize": 16,
+                    "fontWeight": "medium"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "vstack",
+              "properties": {
+                "spacing": 8
+              },
+              "children": [
+                {
+                  "type": "image",
+                  "properties": {
+                    "imageURL": "https://picsum.photos/seed/ocean/200/150",
+                    "resizable": true,
+                    "contentMode": "fill",
+                    "width": 200,
+                    "height": 150,
+                    "cornerRadius": 12,
+                    "clipped": true
+                  }
+                },
+                {
+                  "type": "text",
+                  "properties": {
+                    "content": "Ocean",
+                    "fontSize": 16,
+                    "fontWeight": "medium"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "vstack",
+              "properties": {
+                "spacing": 8
+              },
+              "children": [
+                {
+                  "type": "image",
+                  "properties": {
+                    "imageURL": "https://picsum.photos/seed/forest/200/150",
+                    "resizable": true,
+                    "contentMode": "fill",
+                    "width": 200,
+                    "height": 150,
+                    "cornerRadius": 12,
+                    "clipped": true
+                  }
+                },
+                {
+                  "type": "text",
+                  "properties": {
+                    "content": "Forest",
+                    "fontSize": 16,
+                    "fontWeight": "medium"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "vstack",
+              "properties": {
+                "spacing": 8
+              },
+              "children": [
+                {
+                  "type": "image",
+                  "properties": {
+                    "imageURL": "https://picsum.photos/seed/mountains/200/150",
+                    "resizable": true,
+                    "contentMode": "fill",
+                    "width": 200,
+                    "height": 150,
+                    "cornerRadius": 12,
+                    "clipped": true
+                  }
+                },
+                {
+                  "type": "text",
+                  "properties": {
+                    "content": "Mountains",
+                    "fontSize": 16,
+                    "fontWeight": "medium"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "vstack",
+      "properties": {
+        "spacing": 10,
+        "padding": 12,
+        "backgroundColor": "#F0F0F0",
+        "cornerRadius": 10
+      },
+      "children": [
+        {
+          "type": "text",
+          "properties": {
+            "content": "Component Showcase",
+            "fontSize": 16,
+            "fontWeight": "semibold"
+          }
+        },
+        {
+          "type": "text",
+          "properties": {
+            "content": "This layout demonstrates: VStack, HStack, ScrollView (horizontal), AsyncImage loading from URLs, Text, and Divider components all rendered from JSON.",
+            "fontSize": 14,
+            "foregroundColor": "gray"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jun-ui.org/schemas/v1.0/jun.schema.json",
+  "title": "JUN Component",
+  "description": "JSON UI Notation - A declarative format for defining user interfaces",
+  "type": "object",
+  "required": ["type"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "vstack",
+        "hstack",
+        "zstack",
+        "scrollView",
+        "text",
+        "image",
+        "button",
+        "rectangle",
+        "circle",
+        "spacer",
+        "divider"
+      ],
+      "description": "Component type identifier"
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique component identifier (auto-generated if omitted)"
+    },
+    "properties": {
+      "type": "object",
+      "description": "Component configuration properties",
+      "properties": {
+        "padding": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Internal padding"
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Fixed width"
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Fixed height"
+        },
+        "maxWidth": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum width"
+        },
+        "maxHeight": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum height"
+        },
+        "foregroundColor": {
+          "type": "string",
+          "description": "Text/icon color (named or hex)",
+          "pattern": "^(red|blue|green|yellow|orange|purple|pink|gray|grey|black|white|primary|secondary|#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{8})$"
+        },
+        "backgroundColor": {
+          "type": "string",
+          "description": "Background color (named or hex)",
+          "pattern": "^(red|blue|green|yellow|orange|purple|pink|gray|grey|black|white|primary|secondary|#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{8})$"
+        },
+        "cornerRadius": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Corner radius"
+        },
+        "clipped": {
+          "type": "boolean",
+          "description": "Clip content to bounds"
+        },
+        "aspectRatio": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Aspect ratio (width/height)"
+        },
+        "contentMode": {
+          "type": "string",
+          "enum": ["fit", "fill"],
+          "description": "Content scaling mode"
+        },
+        "spacing": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Space between children (for layouts)"
+        },
+        "alignment": {
+          "type": "string",
+          "description": "Child alignment (varies by component type)"
+        },
+        "axis": {
+          "type": "string",
+          "enum": ["vertical", "horizontal"],
+          "description": "Scroll direction (for scrollView)"
+        },
+        "showsIndicators": {
+          "type": "boolean",
+          "description": "Show scroll indicators (for scrollView)"
+        },
+        "content": {
+          "type": "string",
+          "description": "Text content (for text)"
+        },
+        "fontSize": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Font size (for text)"
+        },
+        "fontWeight": {
+          "type": "string",
+          "enum": ["thin", "light", "regular", "medium", "semibold", "bold", "heavy", "black"],
+          "description": "Font weight (for text)"
+        },
+        "imageURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "Image URL (for image)"
+        },
+        "resizable": {
+          "type": "boolean",
+          "description": "Make image resizable (for image)"
+        },
+        "label": {
+          "type": "string",
+          "description": "Button text (for button)"
+        },
+        "action": {
+          "type": "string",
+          "description": "Action identifier (for button)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "children": {
+      "type": "array",
+      "description": "Child components (for container components only)",
+      "items": {
+        "$ref": "#"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "text"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "required": ["content"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "image"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "required": ["imageURL"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "button"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "required": ["label"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "enum": ["text", "image", "button", "rectangle", "circle", "spacer", "divider"]
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": ["children"]
+        }
+      }
+    }
+  ]
+}
