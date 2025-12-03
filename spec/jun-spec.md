@@ -1,11 +1,11 @@
-# JUN Specification v1.0
+# JUN Specification v1.1
 
 **JSON UI Notation** - A declarative format for defining user interfaces
 
 **Status**: Draft
-**Version**: 1.0.0
+**Version**: 1.1.0
 **Author**: Pawel Zgoda-Ferchmin
-**Last Updated**: 2025-11-30
+**Last Updated**: 2025-12-03
 
 ---
 
@@ -183,6 +183,7 @@ Text label.
     "content": "Hello World",
     "fontSize": 24,
     "fontWeight": "bold",
+    "font": "Helvetica",
     "foregroundColor": "blue"
   }
 }
@@ -317,6 +318,12 @@ These properties can be applied to **any component**:
 | `backgroundColor` | string | Background color | `"red"`, `"#00FF00"` |
 | `cornerRadius` | number | Corner rounding | `12` |
 | `clipped` | boolean | Clip content to bounds | `true` |
+
+#### Typography Properties
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `font` | string | Custom font name | `"Helvetica"`, `"Courier"` |
 
 #### Image Properties
 
@@ -527,9 +534,15 @@ JUN follows semantic versioning:
 - **Minor**: New components/properties (backward compatible)
 - **Patch**: Clarifications, bug fixes
 
-Current version: **1.0.0**
+Current version: **1.1.0**
 
 ### Version History
+
+#### v1.1.0 (2025-12-03)
+- Added `font` universal property for custom font names
+- Typography properties category
+- Enhanced text rendering capabilities
+- Backward compatible with v1.0.0
 
 #### v1.0.0 (2025-11-30)
 - Initial specification
@@ -541,7 +554,7 @@ Current version: **1.0.0**
 
 ## Future Considerations
 
-### Planned for v1.1
+### Planned for v1.2
 
 - Navigation components (navigationLink, sheet)
 - Data binding with template variables `{{var}}`
@@ -576,6 +589,9 @@ Current version: **1.0.0**
   backgroundColor?: string
   cornerRadius?: number
   clipped?: boolean
+
+  // Typography
+  font?: string
 
   // Image
   aspectRatio?: number

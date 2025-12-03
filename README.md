@@ -3,7 +3,7 @@
 A declarative JSON format for defining user interfaces across platforms.
 
 **Created by**: Pawel Zgoda-Ferchmin
-**Version**: 1.0.0
+**Version**: 1.1.0
 **License**: MIT
 
 ---
@@ -63,7 +63,7 @@ A declarative JSON format for defining user interfaces across platforms.
 ## Documentation
 
 ### Core Specification
-- [JUN Specification v1.0](spec/jun-spec.md) - Complete format reference
+- [JUN Specification v1.1](spec/jun-spec.md) - Complete format reference
 - [JSON Schema](schemas/jun.schema.json) - For validation
 
 ### Examples
@@ -86,6 +86,7 @@ Every JUN component has:
 All components support common properties:
 - Layout: `width`, `height`, `maxWidth`, `maxHeight`, `padding`
 - Visual: `backgroundColor`, `foregroundColor`, `cornerRadius`, `clipped`
+- Typography: `font` (NEW in v1.1)
 - Image: `aspectRatio`, `contentMode`
 
 ### 3. Component Types
