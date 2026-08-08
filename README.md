@@ -3,7 +3,7 @@
 A declarative JSON format for defining user interfaces across platforms.
 
 **Created by**: Pawel Zgoda-Ferchmin
-**Version**: 1.1.0
+**Version**: 1.2.0
 **License**: MIT
 
 ---
@@ -63,14 +63,20 @@ A declarative JSON format for defining user interfaces across platforms.
 ## Documentation
 
 ### Core Specification
-- [JUN Specification v1.1](spec/jun-spec.md) - Complete format reference
+- [JUN Specification v1.2](spec/jun-spec.md) - Complete format reference
 - [JSON Schema](schemas/jun.schema.json) - For validation
+- [Changelog](CHANGELOG.md) - Version history
 
 ### Examples
+
+Every example validates against the JSON Schema on each commit.
+
 - [Simple Layout](examples/simple-layout/) - Basic welcome screen
-- [Counter](examples/counter/) - Interactive counter with buttons
+- [Counter](examples/counter/) - Interactive counter demonstrating the action format
 - [Product List](examples/product-list/) - Scrollable catalog with cards
 - [Horizontal Scroll](examples/horizontal-scroll/) - Image gallery with remote URLs
+- [Remote Images](examples/remote-images/) - Loading, sizing and clipping remote images
+- [Font Showcase](examples/font-showcase/) - The `font` property across several typefaces
 
 ## Core Concepts
 
@@ -86,7 +92,7 @@ Every JUN component has:
 All components support common properties:
 - Layout: `width`, `height`, `maxWidth`, `maxHeight`, `padding`
 - Visual: `backgroundColor`, `foregroundColor`, `cornerRadius`, `clipped`
-- Typography: `font` (NEW in v1.1)
+- Typography: `font`
 - Image: `aspectRatio`, `contentMode`
 
 ### 3. Component Types
@@ -95,6 +101,21 @@ All components support common properties:
 **Content**: `text`, `image`, `button`
 **Shapes**: `rectangle`, `circle`
 **Utilities**: `spacer`, `divider`
+
+### 4. Actions
+
+Buttons name an intent; the host application decides what it means. A document can never
+cause an effect on its own.
+
+```json
+{
+  "type": "button",
+  "properties": {
+    "label": "Add to cart",
+    "action": { "name": "addToCart", "params": { "productId": "SKU-42" } }
+  }
+}
+```
 
 ## Design Principles
 
@@ -135,13 +156,18 @@ LLM Output: { "type": "hstack", ... }
 
 ## Version History
 
-- **v1.0.0** - Initial release
-  - Core component types
-  - Universal properties
-  - Remote image support
+- **v1.2.0** - Local and system images, structured actions, error-handling and conformance
+  rules, and a corrected JSON Schema
+- **v1.1.0** - The `font` universal property
+- **v1.0.0** - Initial release: core component types, universal properties, remote images
+
+See [CHANGELOG.md](CHANGELOG.md) for detail.
 
 ## Roadmap
 
+- [ ] Conformance fixture suite
+- [ ] Specification-defined actions (`jun.openURL`, `jun.navigate`, `jun.dismiss`) and the
+      host-veto model they require
 - [ ] Navigation support (push, sheet, fullscreen)
 - [ ] Data binding with template variables `{{var}}`
 - [ ] List iteration (`forEach`)

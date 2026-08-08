@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://jun-ui.org/schemas/v1.0/jun.schema.json",
+  "$id": "https://jun-ui.org/schemas/v1.2/jun.schema.json",
   "title": "JUN Component",
   "description": "JSON UI Notation - A declarative format for defining user interfaces",
   "type": "object",
@@ -35,17 +35,17 @@
         "padding": {
           "type": "number",
           "minimum": 0,
-          "description": "Internal padding"
+          "description": "Internal padding, applied inside width/height"
         },
         "width": {
           "type": "number",
           "minimum": 0,
-          "description": "Fixed width"
+          "description": "Fixed width, inclusive of padding"
         },
         "height": {
           "type": "number",
           "minimum": 0,
-          "description": "Fixed height"
+          "description": "Fixed height, inclusive of padding"
         },
         "maxWidth": {
           "type": "number",
@@ -59,7 +59,7 @@
         },
         "foregroundColor": {
           "type": "string",
-          "description": "Text/icon color (named or hex)",
+          "description": "Text/icon color, and fill color for shapes (named or hex)",
           "pattern": "^(red|blue|green|yellow|orange|purple|pink|gray|grey|black|white|primary|secondary|#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{8})$"
         },
         "backgroundColor": {
@@ -85,6 +85,11 @@
           "type": "string",
           "enum": ["fit", "fill"],
           "description": "Content scaling mode"
+        },
+        "font": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Custom font family or typeface name (since v1.1)"
         },
         "spacing": {
           "type": "number",
@@ -121,7 +126,17 @@
         "imageURL": {
           "type": "string",
           "format": "uri",
-          "description": "Image URL (for image)"
+          "description": "Remote or file URL of the image (for image)"
+        },
+        "imageName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name of an image bundled with the host application (for image, since v1.2)"
+        },
+        "systemImage": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name of an icon in the platform's system icon set (for image, since v1.2)"
         },
         "resizable": {
           "type": "boolean",
@@ -132,8 +147,32 @@
           "description": "Button text (for button)"
         },
         "action": {
-          "type": "string",
-          "description": "Action identifier (for button)"
+          "description": "Action to dispatch when the button is activated (for button). A bare string is shorthand for an action of that name with no parameters.",
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "required": ["name"],
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Action identifier. Names containing a dot are reserved for future specification-defined actions."
+                },
+                "params": {
+                  "type": "object",
+                  "description": "Parameters passed to the host application. Values must be JSON scalars.",
+                  "additionalProperties": {
+                    "type": ["string", "number", "boolean", "null"]
+                  }
+                }
+              }
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -150,6 +189,7 @@
   "allOf": [
     {
       "if": {
+        "required": ["type"],
         "properties": {
           "type": {
             "const": "text"
@@ -157,6 +197,7 @@
         }
       },
       "then": {
+        "required": ["properties"],
         "properties": {
           "properties": {
             "required": ["content"]
@@ -166,6 +207,7 @@
     },
     {
       "if": {
+        "required": ["type"],
         "properties": {
           "type": {
             "const": "image"
@@ -173,15 +215,21 @@
         }
       },
       "then": {
+        "required": ["properties"],
         "properties": {
           "properties": {
-            "required": ["imageURL"]
+            "oneOf": [
+              { "required": ["imageURL"] },
+              { "required": ["imageName"] },
+              { "required": ["systemImage"] }
+            ]
           }
         }
       }
     },
     {
       "if": {
+        "required": ["type"],
         "properties": {
           "type": {
             "const": "button"
@@ -189,6 +237,7 @@
         }
       },
       "then": {
+        "required": ["properties"],
         "properties": {
           "properties": {
             "required": ["label"]
@@ -198,6 +247,7 @@
     },
     {
       "if": {
+        "required": ["type"],
         "properties": {
           "type": {
             "enum": ["text", "image", "button", "rectangle", "circle", "spacer", "divider"]

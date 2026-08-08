@@ -1,11 +1,11 @@
-# JUN Specification v1.1
+# JUN Specification v1.2
 
 **JSON UI Notation** - A declarative format for defining user interfaces
 
 **Status**: Draft
-**Version**: 1.1.0
+**Version**: 1.2.0
 **Author**: Pawel Zgoda-Ferchmin
-**Last Updated**: 2025-12-03
+**Last Updated**: 2026-08-08
 
 ---
 
@@ -18,9 +18,11 @@
 5. [Properties](#properties)
 6. [Data Types](#data-types)
 7. [Color Format](#color-format)
-8. [Examples](#examples)
-9. [Implementation Guidelines](#implementation-guidelines)
-10. [Versioning](#versioning)
+8. [Actions](#actions)
+9. [Examples](#examples)
+10. [Implementation Guidelines](#implementation-guidelines)
+11. [Error Handling and Conformance](#error-handling-and-conformance)
+12. [Versioning](#versioning)
 
 ---
 
@@ -190,11 +192,28 @@ Text label.
 ```
 
 #### `image`
-Image from URL.
+Image from a remote URL, a bundled asset, or the platform's system icon set.
 
 **Properties:**
-- `imageURL` (string) - **Required** - URL to image (http://, https://, or file://)
+- `imageURL` (string) - URL to image (`http://`, `https://`, or `file://`)
+- `imageName` (string) - Name of an image bundled with the host application *(since v1.2)*
+- `systemImage` (string) - Name of an icon in the platform's system icon set *(since v1.2)*
 - `resizable` (boolean) - Make image resizable (default: `false`)
+
+**Exactly one** of `imageURL`, `imageName` or `systemImage` is **required**. Providing more
+than one is invalid.
+
+The three sources differ in who owns the asset:
+
+| Source | Asset owned by | Resolution |
+|--------|----------------|------------|
+| `imageURL` | The document author | Fetched at render time; implementations show a loading state and a failure placeholder |
+| `imageName` | The host application | Looked up in the app's asset catalogue / resource bundle |
+| `systemImage` | The platform | Looked up in the platform icon set (SF Symbols on Apple platforms, Material Symbols on Android, and the equivalent elsewhere) |
+
+Because `imageName` and `systemImage` resolve against assets the *document* cannot ship,
+their names are inherently platform- and application-specific. A document that must render
+identically everywhere should prefer `imageURL`.
 
 **Example:**
 ```json
@@ -211,12 +230,24 @@ Image from URL.
 }
 ```
 
+```json
+{
+  "type": "image",
+  "properties": {
+    "systemImage": "star.fill",
+    "foregroundColor": "yellow",
+    "width": 24,
+    "height": 24
+  }
+}
+```
+
 #### `button`
 Interactive button.
 
 **Properties:**
 - `label` (string) - **Required** - Button text
-- `action` (string) - Action identifier
+- `action` (string | object) - Action dispatched when the button is activated. See [Actions](#actions).
 
 **Example:**
 ```json
@@ -310,14 +341,26 @@ These properties can be applied to **any component**:
 | `maxWidth` | number | Maximum width | `500` |
 | `maxHeight` | number | Maximum height | `300` |
 
+**Padding is internal.** `padding` is applied *inside* `width` and `height`: a component with
+`width: 100` and `padding: 16` occupies 100 points in total, of which 68 are available to its
+content. `backgroundColor` extends under the padding.
+
+**Sizing properties compose.** `width`/`height` and `maxWidth`/`maxHeight` may be combined
+freely; an implementation must not silently drop one because another is present.
+
 #### Visual Properties
 
 | Property | Type | Description | Example |
 |----------|------|-------------|---------|
-| `foregroundColor` | string | Text/icon color | `"blue"`, `"#FF5733"` |
-| `backgroundColor` | string | Background color | `"red"`, `"#00FF00"` |
+| `foregroundColor` | string | Text/icon color, and fill color for shapes | `"blue"`, `"#FF5733"` |
+| `backgroundColor` | string | Background color, painted behind the component | `"red"`, `"#00FF00"` |
 | `cornerRadius` | number | Corner rounding | `12` |
 | `clipped` | boolean | Clip content to bounds | `true` |
+
+**Shape fill.** For `rectangle` and `circle`, `foregroundColor` is the fill. When a shape
+specifies `backgroundColor` but no `foregroundColor`, implementations **must** fill the shape
+with the background color rather than painting it behind an opaque default fill — otherwise
+the most natural way to write a coloured shape produces an invisible one.
 
 #### Typography Properties
 
@@ -356,13 +399,17 @@ Properties only applicable to specific component types.
 
 #### Image
 
-- `imageURL` (string) - **Required** - Image URL
+- `imageURL` (string) - Image URL
+- `imageName` (string) - Bundled asset name
+- `systemImage` (string) - Platform icon name
 - `resizable` (boolean) - Make image resizable
+
+Exactly one of `imageURL`, `imageName`, `systemImage` is required.
 
 #### Button
 
 - `label` (string) - **Required** - Button text
-- `action` (string) - Action identifier
+- `action` (string | object) - Dispatched on activation; see [Actions](#actions)
 
 ---
 
@@ -406,6 +453,78 @@ Standard color names (case-insensitive):
 - Must start with `#`
 - Case-insensitive hex digits (0-9, A-F)
 - No shorthand notation (#RGB)
+
+---
+
+## Actions
+
+*Since v1.2.*
+
+An action expresses **what the document wants to happen**, not how it happens. A JUN
+document can only *name* an intent; nothing occurs unless the host application implements
+that name. This is deliberate — a document arriving from a server must never be able to make
+an application act on its own.
+
+Currently only `button` carries an action.
+
+### Format
+
+An action is either a string or an object.
+
+```json
+{ "type": "button", "properties": { "label": "Check out", "action": "checkout" } }
+```
+
+```json
+{
+  "type": "button",
+  "properties": {
+    "label": "Add to cart",
+    "action": {
+      "name": "addToCart",
+      "params": { "productId": "SKU-42", "quantity": 1 }
+    }
+  }
+}
+```
+
+The string form is shorthand: `"checkout"` is exactly equivalent to
+`{ "name": "checkout", "params": {} }`. Both forms are canonical — use the string when there
+are no parameters.
+
+### Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | **Required.** Non-empty action identifier |
+| `params` | object | Optional parameters passed through to the host |
+
+### Parameter values
+
+`params` values **must be JSON scalars**: string, number, boolean, or null. Nested objects
+and arrays are not permitted in v1.2.
+
+This restriction is intentional. It keeps the parameter type trivial to express in every
+target language, keeps host-side unpacking free of schema guesswork, and can be relaxed in a
+later version without breaking existing documents — whereas the reverse could not be done.
+
+### Reserved names
+
+Action names containing a dot (`.`) are **reserved** for future specification-defined
+actions. Applications must not define their own dotted names.
+
+No dotted actions are defined in v1.2. Implementations encountering one **must** forward it
+to the host application unchanged rather than treating it as an error, so that a future
+version can define standard actions without breaking older implementations.
+
+### Dispatch
+
+Implementations must:
+
+1. Deliver the action to a host-supplied handler, with `name` and `params` intact.
+2. Do nothing when no handler is supplied. An implementation must not invent a default
+   behaviour for any action name, and must not log to standard output in release builds.
+3. Never interpret `params` as instructions — parameters are opaque data for the host.
 
 ---
 
@@ -526,6 +645,76 @@ Implementations may add:
 
 ---
 
+## Error Handling and Conformance
+
+*Since v1.2.*
+
+Two kinds of thing go wrong when parsing a JUN document, and they have opposite correct
+responses. Conflating them is the most common implementation mistake.
+
+### Forward-compatibility failures — degrade
+
+An unknown component type, an unknown property, or a value from a later version of the
+specification means **the producer is ahead of the client**. Implementations **must**
+degrade rather than fail:
+
+- Unknown component type → skip the component, keep rendering its siblings and ancestors.
+- Unknown property → ignore it.
+- Unknown enum value (`alignment`, `fontWeight`, `contentMode`, `axis`) → use the default.
+
+This is not a nicety. A client that rejects a document because it contains one unfamiliar
+component forces every server-side addition to wait for a coordinated client release, which
+defeats the purpose of describing interfaces as data.
+
+Behaviour must not depend on incidental document shape. In particular, an unknown component
+type must be handled the same way whether or not it happens to carry a `properties` object.
+
+### Malformed input — report
+
+A value of the wrong JSON type, a missing required property, or malformed JSON means **the
+producer has a bug**. Implementations **must not** discard these silently.
+
+- The implementation **should** still render everything it could parse.
+- It **must** make the failures available to the host application, each identified by its
+  location in the document (for example `children[3].properties.imageURL`) and a description
+  of the problem.
+- A malformed component **must not** remove its siblings. Implementations parsing a
+  `children` array must handle each element independently.
+- Implementations **should** offer a strict mode that fails on the first such problem, for
+  use in tests and build pipelines.
+
+The distinction matters most in production: a lenient parser that reports nothing turns a
+producer-side bug into a blank screen with no diagnosis, while a strict parser turns a
+harmless unknown property into an outage.
+
+### Resource limits
+
+Documents may arrive from untrusted sources. Implementations **must** bound their parsing:
+
+- A maximum nesting depth (recommended: 64).
+- A maximum total component count (recommended: 10,000).
+
+Exceeding a limit is a hard failure, not a degradation — the document is rejected. This also
+discharges the circular-reference concern, since JSON documents cannot contain cycles but
+generated ones can be arbitrarily deep.
+
+### Conformance checklist
+
+An implementation conforms to JUN v1.2 if it:
+
+1. Renders every component type in [Component Types](#component-types).
+2. Applies every universal property in [Properties](#properties), with the padding, sizing
+   and shape-fill semantics stated there.
+3. Accepts both action forms and dispatches them per [Actions](#actions).
+4. Degrades on unknown types, properties and enum values.
+5. Reports malformed input with a location, and isolates malformed siblings.
+6. Enforces depth and node limits.
+7. Accepts only the property names in this specification. Implementations must not accept
+   private aliases for specified properties: a document that parses in one implementation and
+   not another is the failure mode this format exists to prevent.
+
+---
+
 ## Versioning
 
 JUN follows semantic versioning:
@@ -534,9 +723,18 @@ JUN follows semantic versioning:
 - **Minor**: New components/properties (backward compatible)
 - **Patch**: Clarifications, bug fixes
 
-Current version: **1.1.0**
+Current version: **1.2.0**
 
 ### Version History
+
+#### v1.2.0 (2026-08-08)
+- Added `imageName` and `systemImage` as alternatives to `imageURL`
+- Added the structured action format, `params`, and the reserved dotted-name namespace
+- Added [Error Handling and Conformance](#error-handling-and-conformance)
+- Clarified that `padding` is internal to `width`/`height`, that sizing properties compose,
+  and that `foregroundColor` fills shapes
+- Corrected the JSON Schema, which had omitted the v1.1 `font` property
+- Backward compatible with v1.1.0
 
 #### v1.1.0 (2025-12-03)
 - Added `font` universal property for custom font names
@@ -554,20 +752,27 @@ Current version: **1.1.0**
 
 ## Future Considerations
 
-### Planned for v1.2
+### Planned for v1.3
 
-- Navigation components (navigationLink, sheet)
-- Data binding with template variables `{{var}}`
-- List iteration with `forEach`
+- A conformance fixture suite, so implementations can be checked against the specification
+  rather than against each other
+- Specification-defined actions under the reserved dotted namespace — `jun.openURL`,
+  `jun.navigate`, `jun.dismiss` — together with the host-veto model they require. These
+  differ in kind from application-defined actions: they would let a document cause an effect
+  without any application code, so they need a security design, not just a schema entry
+- Navigation components (navigationLink, sheet), which depend on the above
 
 ### Under Discussion
 
+- Data binding with template variables `{{var}}`
+- List iteration with `forEach`
 - Animation properties
-- Gesture recognizers
+- Gesture recognizers, and whether `action` should extend beyond `button`
 - Conditional rendering
 - State management
 - Form components (textField, picker, toggle, slider)
 - Custom component registration
+- Nested values in action `params`
 
 ---
 
@@ -629,7 +834,11 @@ Current version: **1.1.0**
 **Image:**
 ```typescript
 {
-  imageURL: string  // required
+  // exactly one of:
+  imageURL?: string
+  imageName?: string
+  systemImage?: string
+
   resizable?: boolean
 }
 ```
@@ -638,7 +847,10 @@ Current version: **1.1.0**
 ```typescript
 {
   label: string  // required
-  action?: string
+  action?: string | {
+    name: string
+    params?: { [key: string]: string | number | boolean | null }
+  }
 }
 ```
 
@@ -650,7 +862,7 @@ Current version: **1.1.0**
 
 - Component must have `type` field
 - Text must have `content` property
-- Image must have `imageURL` property
+- Image must have exactly one of `imageURL`, `imageName`, `systemImage`
 - Button must have `label` property
 
 ### Optional Fields
